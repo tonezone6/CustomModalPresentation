@@ -39,18 +39,14 @@ struct FirstView: View {
             }
         }
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("Action") {
-                    isPresented.toggle()
-                }
+            Button("Action") {
+                isPresented = true
             }
         }
-        .fullscreenModal(
-            isPresented: $isPresented,
-            presentationStyle: .overFullScreen,
-            transitionStyle: .crossDissolve
-        ) {
-            FullScreenPopupView()
+        .fullScreenModal(isPresented: $isPresented) {
+            FullScreenPopupView(onDismiss: {
+                isPresented = false
+            })
         }
     }
 }

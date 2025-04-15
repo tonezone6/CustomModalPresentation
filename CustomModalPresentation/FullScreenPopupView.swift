@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct FullScreenPopupView: View {
-    @Environment(\.dismiss) var dismiss
+    let onDismiss: () -> Void
 
     var body: some View {
         ZStack {
@@ -17,7 +17,8 @@ struct FullScreenPopupView: View {
                     .foregroundStyle(.secondary)
                 
                 Button("Dismiss") {
-                    dismiss()
+                    print("dismissing...")
+                    onDismiss()
                 }
             }
             .padding()
@@ -32,6 +33,6 @@ struct FullScreenPopupView: View {
 }
 
 #Preview {
-    FullScreenPopupView()
+    FullScreenPopupView(onDismiss: {})
 }
 

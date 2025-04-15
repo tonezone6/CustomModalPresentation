@@ -1,10 +1,7 @@
 import SwiftUI
 
 extension View {
-    ///
-    /// View presentation wrapping UIKit modal presentation
-    /// style and transition
-    func fullscreenModal<Content: View>(
+    func fullScreenModal<Content: View>(
         isPresented: Binding<Bool>,
         presentationStyle: UIModalPresentationStyle = .overFullScreen,
         transitionStyle: UIModalTransitionStyle = .crossDissolve,
@@ -13,56 +10,52 @@ extension View {
         self.modifier(
             FullScreenModalViewModifier(
                 isPresented: isPresented,
-                modalPresentationStyle: presentationStyle,
-                modalTransitionStyle: transitionStyle,
-                presentedContent: content
+                presentationStyle: presentationStyle,
+                transitionStyle: transitionStyle,
+                presentationContent: content
             )
         )
     }
 }
 
-struct FullScreenModalViewModifier<PresentedContent: View>: ViewModifier {
+struct FullScreenModalViewModifier<PresentationContent: View>: ViewModifier {
     @Binding var isPresented: Bool
-    let modalPresentationStyle: UIModalPresentationStyle
-    let modalTransitionStyle: UIModalTransitionStyle
-    let presentedContent: () -> PresentedContent
+    let presentationStyle: UIModalPresentationStyle
+    let transitionStyle: UIModalTransitionStyle
+    let presentationContent: () -> PresentationContent
     
     func body(content: Content) -> some View {
         content.background(
-            FullScreenModalController(
+            FullScreenModalView(
                 isPresented: $isPresented,
-                modalPresentationStyle: modalPresentationStyle,
-                modalTransitionStyle: modalTransitionStyle,
-                content: {
-                    presentedContent()
-                }
+                presentationStyle: presentationStyle,
+                transitionStyle: transitionStyle,
+                content: presentationContent
             )
         )
     }
-}
-
-struct FullScreenModalController<Content: View>: UIViewControllerRepresentable {
-    @Binding var isPresented: Bool
-    let modalPresentationStyle: UIModalPresentationStyle
-    let modalTransitionStyle: UIModalTransitionStyle
-    let content: () -> Content
     
-    func makeUIViewController(context: Context) -> UIViewController {
-        let viewController = UIViewController()
-        viewController.view.backgroundColor = .clear
-        return viewController
-    }
-    
-    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
-        if isPresented {
-            let hostingController = UIHostingController(rootView: content())
-            hostingController.view.backgroundColor = .clear
-            hostingController.modalPresentationStyle = modalPresentationStyle
-            hostingController.modalTransitionStyle = modalTransitionStyle
-            uiViewController.present(hostingController, animated: true)
-            
-            DispatchQueue.main.async {
-                isPresented = false  // Reset after presenting
+    struct FullScreenModalView<Content: View>: UIViewControllerRepresentable {
+        @Binding var isPresented: Bool
+        let presentationStyle: UIModalPresentationStyle
+        let transitionStyle: UIModalTransitionStyle
+        let content: () -> Content
+        
+        func makeUIViewController(context: Context) -> UIViewController {
+            let viewController = UIViewController()
+            viewController.view.backgroundColor = .clear
+            return viewController
+        }
+        
+        func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
+            if isPresented {
+                let uiHostingController = UIHostingController(rootView: content())
+                uiHostingController.view.backgroundColor = .clear
+                uiHostingController.modalPresentationStyle = presentationStyle
+                uiHostingController.modalTransitionStyle = transitionStyle
+                uiViewController.present(uiHostingController, animated: true)
+            } else {
+                uiViewController.dismiss(animated: true)
             }
         }
     }
